@@ -1,10 +1,6 @@
 from igra import *
 from unosumatricu import *
 
-odrezano = 0
-dostignuta_dubina = 0
-
-
 class evaluator():
     def __init__(self):
         self.evaluator = 0
@@ -17,11 +13,8 @@ za dati cvor. Kod nas tj. maximizer-a ona je -inf (minus beskonacno), za AI je +
 Ako je v > beta ili v < alfa onda odsijecamo taj dio stabla."""
 
 #Dobijamo trenutno stanje igre (matricu/plocu), sa odredjenom dubinom.
-def alfaBetaRezanje(ploca, dubina, igrac, alfa, beta, faza1Bool, heuristika):
+def minimax(ploca, dubina, igrac, alfa, beta, faza1Bool, heuristika):
     ishod = evaluator()
-
-    global dostignuta_dubina
-    dostignuta_dubina += 1
 
     if dubina != 0:
         trenutno_stanje = evaluator()
@@ -48,67 +41,13 @@ def alfaBetaRezanje(ploca, dubina, igrac, alfa, beta, faza1Bool, heuristika):
 
             if igrac:
 
-                trenutno_stanje = alfaBetaRezanje(potez, dubina - 1, False, alfa, beta, faza1Bool, heuristika)
-
-                if trenutno_stanje.evaluator > alfa:
-                    alfa = trenutno_stanje.evaluator
-                    ishod.ploca = potez
-            else:
-
-                trenutno_stanje = alfaBetaRezanje(potez, dubina - 1, True, alfa, beta, faza1Bool, heuristika)
-
-                if trenutno_stanje.evaluator < beta:
-                    beta = trenutno_stanje.evaluator
-                    ishod.ploca = potez
-
-            if alfa >= beta:
-                global odrezano
-                odrezano += 1
-                break
-
-        if igrac:
-            ishod.evaluator = alfa
-        else:
-            ishod.evaluator = beta
-
-    else:
-        if igrac:
-            ishod.evaluator = heuristika(ploca, faza1Bool)
-        else:
-            ishod.evaluator = heuristika(InverznaPloca(ploca), faza1Bool)
-
-    return ishod
-
-def minimax(ploca, dubina, igrac, alfa, beta, faza1Bool, heuristika):
-    ishod = evaluator()
-
-    global dostignuta_dubina
-    dostignuta_dubina += 1
-
-    if dubina != 0:
-        trenutno_stanje = evaluator()
-
-        if igrac:
-            if faza1Bool:
-                moguci_potezi = faza1(ploca)
-            else:
-                moguci_potezi = faza23(ploca)
-
-        else:
-            if faza1Bool:
-                moguci_potezi = generisanjeListeInverznihPloca(faza1(InverznaPloca(ploca)))
-            else:
-                moguci_potezi = generisanjeListeInverznihPloca(faza23(InverznaPloca(ploca)))
-
-        for potez in moguci_potezi:
-
-            if igrac:
                 trenutno_stanje = minimax(potez, dubina - 1, False, alfa, beta, faza1Bool, heuristika)
 
                 if trenutno_stanje.evaluator > alfa:
                     alfa = trenutno_stanje.evaluator
                     ishod.ploca = potez
             else:
+
                 trenutno_stanje = minimax(potez, dubina - 1, True, alfa, beta, faza1Bool, heuristika)
 
                 if trenutno_stanje.evaluator < beta:
@@ -124,18 +63,10 @@ def minimax(ploca, dubina, igrac, alfa, beta, faza1Bool, heuristika):
         if igrac:
             ishod.evaluator = heuristika(ploca, faza1Bool)
         else:
-            ishod.evaluator = heuristika(ploca, faza1Bool)
+            ishod.evaluator = heuristika(InverznaPloca(ploca), faza1Bool)
 
     return ishod
 
-def brojRezova():
-    global odrezano
-    x = odrezano
-    odrezano = 0
-    return x
 
-def brojSpratova():
-    global dostignuta_dubina
-    x = dostignuta_dubina
-    dostignuta_dubina = 0
-    return x
+
+

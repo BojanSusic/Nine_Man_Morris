@@ -1,37 +1,10 @@
-import copy
-import pygame, math, sys
-
+import pygame
 from alfabetarezanje import *
-from igra import *
 from heuristika import *
-import time
 
 alfa = float('-inf')
 beta = float('inf')
 dubina = 3
-
-
-def trenutnaPloca(ploca):
-    print(ploca[0] + "(00)----------------------" + ploca[1] + "(01)----------------------" + ploca[2] + "(02)");
-    print("|                           |                           |");
-    print("|       " + ploca[8] + "(08)--------------" + ploca[9] + "(09)--------------" + ploca[10] + "(10)     |");
-    print("|       |                   |                    |      |");
-    print("|       |                   |                    |      |");
-    print("|       |        " + ploca[16] + "(16)-----" + ploca[17] + "(17)-----" + ploca[18] + "(18)       |      |");
-    print("|       |         |                   |          |      |");
-    print("|       |         |                   |          |      |");
-    print(ploca[3] + "(03)---" + ploca[11] + "(11)----" + ploca[19] + "(19)               " + ploca[20] + "(20)----" +
-          ploca[12] + "(12)---" + ploca[4] + "(04)");
-    print("|       |         |                   |          |      |");
-    print("|       |         |                   |          |      |");
-    print("|       |        " + ploca[21] + "(21)-----" + ploca[22] + "(22)-----" + ploca[23] + "(23)       |      |");
-    print("|       |                   |                    |      |");
-    print("|       |                   |                    |      |");
-    print("|       " + ploca[13] + "(13)--------------" + ploca[14] + "(14)--------------" + ploca[15] + "(15)     |");
-    print("|                           |                           |");
-    print("|                           |                           |");
-    print(ploca[5] + "(05)----------------------" + ploca[6] + "(06)----------------------" + ploca[7] + "(07)");
-
 
 board = ["X", "X", "X", "A", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X",
          "X", "X"]
@@ -46,7 +19,7 @@ boardCirclesProp = [[(370, 60), (0, 0, 0), 1], [(670, 60), (0, 0, 0), 1], [(970,
 circles = []
 
 
-def drawboard():
+def drawboard(message):
     circles.clear()
     screen.fill((255, 255, 255))
     pygame.draw.line(screen, (0, 0, 0), (390, 60), (650, 60), 1)
@@ -57,7 +30,6 @@ def drawboard():
     pygame.draw.line(screen, (0, 0, 0), (970, 380), (970, 640), 1)
     pygame.draw.line(screen, (0, 0, 0), (390, 660), (650, 660), 1)
     pygame.draw.line(screen, (0, 0, 0), (690, 660), (950, 660), 1)
-
     pygame.draw.line(screen, (0, 0, 0), (490, 160), (650, 160), 1)
     pygame.draw.line(screen, (0, 0, 0), (690, 160), (850, 160), 1)
     pygame.draw.line(screen, (0, 0, 0), (590, 260), (650, 260), 1)
@@ -78,18 +50,20 @@ def drawboard():
     pygame.draw.line(screen, (0, 0, 0), (870, 380), (870, 540), 1)
     pygame.draw.line(screen, (0, 0, 0), (770, 280), (770, 340), 1)
     pygame.draw.line(screen, (0, 0, 0), (770, 380), (770, 440), 1)
-
     pygame.draw.line(screen, (0, 0, 0), (670, 80), (670, 140), 1)
     pygame.draw.line(screen, (0, 0, 0), (670, 180), (670, 240), 1)
     pygame.draw.line(screen, (0, 0, 0), (670, 480), (670, 540), 1)
     pygame.draw.line(screen, (0, 0, 0), (670, 580), (670, 640), 1)
+    pygame.font.init()
+    myfont = pygame.font.SysFont('Arial', 20)
+    textsurface = myfont.render(message, False, (0, 0, 0))
+    screen.blit(textsurface, (20, 340))
     for boardCircle in boardCirclesProp:
         circles.append(pygame.draw.circle(screen, boardCircle[1], boardCircle[0], 20, boardCircle[2]))
 
     pygame.display.flip()
 
-
-def boardChanged():
+def boardChanged(message):
     for i in range(24):
         if board[i] == "X":
             boardCirclesProp[i][1] = (0, 0, 0)
@@ -99,10 +73,7 @@ def boardChanged():
         elif board[i] == "2":
             boardCirclesProp[i][2] = 0
             boardCirclesProp[i][1] = (255, 0, 0)
-    print(board)
-    print(boardCirclesProp)
-    drawboard()
-
+    drawboard(message)
 
 background_color = (255, 255, 255)
 (width, height) = (1280, 720)
@@ -111,28 +82,24 @@ pygame.display.set_caption('9 Man Morris')
 screen.fill(background_color)
 pygame.display.flip()
 running = True
-
-drawboard()
+message = "Postavi Figuru:"
+drawboard(message)
 
 prom = "X"
+
 while running:
     pos = pygame.mouse.get_pos()
     ev = pygame.event.get()
-
     heuristika_faza1 = brojKamencicaNaPlociHeuristika
     heuristika_faza23 = CovekVS_AI_Heuristika
-
     evaluacija = evaluator()
 
     for i in range(9):
-        trenutnaPloca(board)
         zavrseno = False
         while not zavrseno:
             try:
                 pozicija = -1
-                print("stavite kamencic na jedno mjesto")
                 while pozicija == -1 and running != False:
-
                     ev = pygame.event.get()
                     pos = pygame.mouse.get_pos()
                     for event in ev:
@@ -140,23 +107,18 @@ while running:
                             for i in range(len(circles)):
                                 if circles[i].collidepoint(pos):
                                     pozicija = i
-
                         if event.type == pygame.QUIT:
                             quit()
-                # Ukoliko je mjesto prazno, onda ga mozemo popuniti
                 if board[pozicija] == "X":
                     board[pozicija] = "1"
-                    boardChanged()
+                    boardChanged("Postavili ste figuru. Protivnik igra.")
                     if imaLiIkoMill(pozicija, board):
-                        # Ukoliko smo dobili MILL, prije nego sto postavimo kamencic, mozemo da uklonimo bilo koji
-                        # protivnicki
                         kamencicPostavljen = False
                         while not kamencicPostavljen:
                             try:
                                 pozicija = -1
-                                print("ukloni protivnicki kamencic")
+                                boardChanged("Postavili ste figuru. Ukloni protivnicku figuru.")
                                 while pozicija == -1 and running != False:
-
                                     ev = pygame.event.get()
                                     pos = pygame.mouse.get_pos()
                                     for event in ev:
@@ -165,51 +127,37 @@ while running:
                                                 if circles[i].collidepoint(pos):
                                                     pozicija = i
                                                     boardCirclesProp[i][2] = 0
-                                                    drawboard()
+                                                    drawboard("Pojeli ste protivnika. Protivnik igra")
                                         if event.type == pygame.QUIT:
                                             quit()
-                                # pozicija = int(input("\n Ukloni jedan protivnički '2' kamenčić: "))
-
                                 if board[pozicija] == "2" and not imaLiIkoMill(pozicija, board) or (
                                         imaLiIkoMill(pozicija, board) and brojKonkretnihPoteza(board, "1") == 3):
                                     board[pozicija] = "X"
-                                    boardChanged()
+                                    boardChanged("Pojeli ste protivnika. Protivnik igra")
                                     kamencicPostavljen = True
                                 else:
-                                    print(
-                                        "Na poziciji koju ste uneli ne postoji protivnički '2' kamenčić. Pokušajte ponovo.")
+                                    boardChanged("Ne postoji protivnicka figura na tom mjestu.")
                             except Exception:
-                                print("Nevalidan unos (van datog opsega/nije cijeli broj")
-
+                                boardChanged("Doslo je do greske pokusajte ponovo.")
                     zavrseno = True
-
                 else:
-                    print("Mjesto je već zauzeto.")
-
+                    boardChanged("Mjesto je zauzeto.")
             except Exception:
-                print("Nevalidan unos.")
-
-        trenutnaPloca(board)
-        odgovorProtivnika = alfaBetaRezanje(board, dubina, False, alfa, beta, True, heuristika_faza1)
-
+                boardChanged("Doslo je do greske pokusajte ponovo.")
+        odgovorProtivnika = minimax(board, dubina, False, alfa, beta, True, heuristika_faza1)
         if odgovorProtivnika.evaluator == float('-inf'):
-            print("Izgubili ste.\n")
-            exit(0)
+            boardChanged("Izgubili ste!.")
         else:
             board = odgovorProtivnika.ploca
-            boardChanged()
+            boardChanged("Protivnik odigrao. Postavi figuru.")
     zavrsneFazeGotove = False
     while not zavrsneFazeGotove:
-        trenutnaPloca(board)
-
-        # Izvrsavanje sledeceg poteza za igraca
         igracSePomjerio = False
         while not igracSePomjerio:
             try:
                 pozicija = -1
-                print("stavite kamencic na jedno mjesto")
-                while pozicija == -1 and running != False:
-
+                boardChanged("Odaberi figuru koju zelis da pomjeris.")
+                while pozicija == -1:
                     ev = pygame.event.get()
                     pos = pygame.mouse.get_pos()
                     for event in ev:
@@ -217,15 +165,12 @@ while running:
                             for i in range(len(circles)):
                                 if circles[i].collidepoint(pos):
                                     pozicija = i
-
                         if event.type == pygame.QUIT:
                             quit()
-
                 while board[pozicija] != '1':
                     pozicija = -1
-                    print("stavite kamencic na jedno mjesto")
-                    while pozicija == -1 and running != False:
-
+                    boardChanged("Odaberi figuru koju zelis da pomjeris.")
+                    while pozicija == -1:
                         ev = pygame.event.get()
                         pos = pygame.mouse.get_pos()
                         for event in ev:
@@ -233,16 +178,13 @@ while running:
                                 for i in range(len(circles)):
                                     if circles[i].collidepoint(pos):
                                         pozicija = i
-
                             if event.type == pygame.QUIT:
                                 quit()
-
                 igracZauzeoNovoMesto = False
                 while not igracZauzeoNovoMesto:
                     nova_pozicija = -1
-                    print("stavite kamencic na novo mjesto")
-                    while nova_pozicija == -1 and running != False:
-
+                    boardChanged("Odaberi gdje zelis da pomjeris tu figuru.")
+                    while nova_pozicija == -1:
                         ev = pygame.event.get()
                         pos = pygame.mouse.get_pos()
                         for event in ev:
@@ -250,22 +192,20 @@ while running:
                                 for i in range(len(circles)):
                                     if circles[i].collidepoint(pos):
                                         nova_pozicija = i
-
                             if event.type == pygame.QUIT:
                                 quit()
-                    if board[nova_pozicija] == "X":
+                    print(mogucaPozicija(pozicija,nova_pozicija,board))
+                    if board[nova_pozicija] == "X" and mogucaPozicija(pozicija,nova_pozicija, board):
                         board[pozicija] = 'X'
                         board[nova_pozicija] = '1'
-                        boardChanged()
-
+                        boardChanged("Pomjerili ste figuru. Protivnik igra")
                         if imaLiIkoMill(nova_pozicija, board):
                             uklonjenProtivnik = False
                             while not uklonjenProtivnik:
                                 try:
                                     pozicija = -1
-                                    print("pojedi protivnika")
+                                    boardChanged("Pojedi protivnika.")
                                     while pozicija == -1 and running != False:
-
                                         ev = pygame.event.get()
                                         pos = pygame.mouse.get_pos()
                                         for event in ev:
@@ -273,39 +213,28 @@ while running:
                                                 for i in range(len(circles)):
                                                     if circles[i].collidepoint(pos):
                                                         pozicija = i
-
                                             if event.type == pygame.QUIT:
                                                 quit()
-
                                     if board[pozicija] == "2" and not imaLiIkoMill(pozicija, board) or (
                                             imaLiIkoMill(pozicija, board) and brojKonkretnihPoteza(board, "1") == 3):
                                         board[pozicija] = "X"
-                                        boardChanged()
+                                        boardChanged("Pojeli ste protivnika. Protivnik igra")
                                         uklonjenProtivnik = True
                                     else:
-                                        print("Nepostojeća pozicija.")
+                                        boardChanged("Pozicija ne postoji.")
                                 except Exception:
                                     print("Nevalidan unos.")
-
                         igracZauzeoNovoMesto = True
                         igracSePomjerio = True
-
                     else:
-                        print("Ne možete se pomeriti na datu poziciju.")
-
+                        boardChanged("Ne možete se pomeriti na datu poziciju.")
             except Exception:
-                print("Ne mozete se pomeriti na datu poziciju.")
-
+                boardChanged("Ne možete se pomeriti na datu poziciju.")
         if heruistickaEvaluacijaFaza23(board) == float('inf'):
-            print("Pobedili ste!")
-            exit(0)
-
-        trenutnaPloca(board)
-        evaluacija = alfaBetaRezanje(board, dubina, False, alfa, beta, False, heuristika_faza23)
-
+            boardChanged("Pobijedili Ste!")
+        evaluacija = minimax(board, dubina, False, alfa, beta, False, heuristika_faza23)
         if evaluacija.evaluator == float('-inf'):
-            print("Izgubili ste.")
-            exit(0)
+            boardChanged("Izgubili ste!")
         else:
             board = evaluacija.ploca
-            boardChanged()
+            boardChanged("Protivnik odigrao. TI si na potezu")
