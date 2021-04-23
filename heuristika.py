@@ -1,68 +1,68 @@
 from igra import *
 
-"""Heuristika koja vraca neku vrijednost u ovisnosti od toga koliko se nalazi kamencica na ploci, u sustini bitna nam 
-je kod toga da odredjuje da li smo dovoljno "blizu" kraju igre."""
-def brojKamencicaNaPlociHeuristika(ploca, faza1Bool):
-    #evaluacija = 0
-    brojOdigranihPotezaIgrac = brojKonkretnihPoteza(ploca, "1")
-    brojOdigranihPotezaAI = brojKonkretnihPoteza(ploca, "2")
-    moguciPoteziAI = 0
-    if not faza1Bool:
-        moguciPoteziCrni = len(faza23(ploca))
-    if not faza1Bool:
-        if brojOdigranihPotezaAI <= 2 or moguciPoteziCrni == 0:
-            evaluacija = float('inf')
-        elif brojOdigranihPotezaIgrac <= 2:
-            evaluacija = float('-inf')
+def getNumberOfPieces(player,board):
+    pieces=0
+    for position in board:
+        if player==position:
+            pieces+=1
+    return pieces
+
+
+
+def position_number_heuristic(board, isState1):
+
+    movedPartsHuman = concrete_move_number(board, "1")
+    movedPartsAi = concrete_move_number(board, "2")
+
+    if not isState1:
+        possibleMovesBlack = len(faza23(board))
+        if movedPartsAi <= 2 or possibleMovesBlack == 0:
+            evaluation = float('inf')
+        elif movedPartsHuman <= 2:
+            evaluation = float('-inf')
         else:
-            evaluacija = 200 * (brojOdigranihPotezaIgrac - brojOdigranihPotezaAI)
+            evaluation = 200 * (movedPartsHuman - movedPartsAi)
     else:
-        evaluacija = 100 * (brojOdigranihPotezaIgrac - brojOdigranihPotezaAI)
+        evaluation = 100 * (movedPartsHuman - movedPartsAi)
 
-    return evaluacija
+    return evaluation
 
-"""Heuristika koja igra u fazi 2,3 bitnu ulogu za racunar jer vraca neku vrijednost u ovisnosti od toga koliko se 
-nalazi kamencica na ploci i koji su to potencijalni MILL koji bi mogli da se formiraju (dobri po racunar)."""
-def CovekVS_AI_Heuristika(ploca, faza1Bool):
-    evaluacija = 0
+def human_vs_ai_heuristic(board, isState1):
+    evaluation = 0
 
-    brojOdigranihPotezaIgrac = brojKonkretnihPoteza(ploca, "1")
-    brojOdigranihPotezaAI = brojKonkretnihPoteza(ploca, "2")
+    movedPartsHuman = concrete_move_number(board, "1")
+    movedPartsAi = concrete_move_number(board, "2")
 
-    brojMogucihMillIgrac = brojMogucihMill(ploca, "1")
-    brojMogucihMillAI = brojMogucihMill(ploca, "2")
+    possibleMillHuman = brojMogucihMill(board, "1")
+    possibleMillAi = brojMogucihMill(board, "2")
 
-    moguciPoteziIgrac = 0
-    moguciPoteziAI = 0
+    potentialMillHuman = nizKamencicaKojiFormirajuPotencijalniMill(board, "1")
+    potentialMillAi = nizKamencicaKojiFormirajuPotencijalniMill(board, "2")
 
-    if not faza1Bool:
-        moguciPoteziCrni = len(faza23(ploca))
 
-    potencijalniMillIgrac = nizKamencicaKojiFormirajuPotencijalniMill(ploca, "1")
-    potencijalniMillAI = nizKamencicaKojiFormirajuPotencijalniMill(ploca, "2")
 
-    if not faza1Bool:
-        if brojOdigranihPotezaAI <= 2 or moguciPoteziCrni == 0:
-            evaluacija = float('inf')
-        elif brojOdigranihPotezaIgrac <= 2:
-            evaluacija = float('-inf')
+    if not isState1:
+        possibleMovesHuman = len(faza23(board))
+        if movedPartsAi <= 2 or possibleMovesHuman == 0:
+            evaluation = float('inf')
+        elif movedPartsHuman <= 2:
+            evaluation = float('-inf')
         else:
-            if (brojOdigranihPotezaIgrac < 4):
-                evaluacija += 100 * brojMogucihMillIgrac
-                evaluacija += 200 * potencijalniMillAI
+            if (movedPartsHuman < 4):
+                evaluation += 100 * possibleMillHuman
+                evaluation += 200 * potentialMillAi
             else:
-                evaluacija += 200 * brojMogucihMillIgrac
-                evaluacija += 100 * potencijalniMillAI
-            evaluacija -= 25 * moguciPoteziCrni
-            evaluacija += 50 * (brojOdigranihPotezaIgrac - brojOdigranihPotezaAI)
+                evaluation += 200 * possibleMillHuman
+                evaluation += 100 * potentialMillAi
+            evaluation -= 25 * possibleMovesHuman
+            evaluation += 50 * (movedPartsHuman - movedPartsAi)
     else:
-        if brojOdigranihPotezaIgrac < 4:
-            evaluacija += 100 * brojMogucihMillIgrac
-            evaluacija += 200 * potencijalniMillAI
+        if movedPartsHuman < 4:
+            evaluation += 100 * possibleMillHuman
+            evaluation += 200 * potentialMillAi
         else:
-            evaluacija += 200 * brojMogucihMillIgrac
-            evaluacija += 100 * potencijalniMillAI
-        evaluacija -= 25 * moguciPoteziCrni
-        evaluacija += 50 * (brojOdigranihPotezaIgrac - brojOdigranihPotezaAI)
+            evaluation += 200 * possibleMillHuman
+            evaluation += 100 * potentialMillAi
+        evaluation += 50 * (movedPartsHuman - movedPartsAi)
 
-    return evaluacija
+    return evaluation

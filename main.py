@@ -6,7 +6,7 @@ alfa = float('-inf')
 beta = float('inf')
 dubina = 3
 
-board = ["X", "X", "X", "A", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X",
+board = ["X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X",
          "X", "X"]
 boardCirclesProp = [[(370, 60), (0, 0, 0), 1], [(670, 60), (0, 0, 0), 1], [(970, 60), (0, 0, 0), 1],
                     [(370, 360), (0, 0, 0), 1], [(970, 360), (0, 0, 0), 1], [(370, 660), (0, 0, 0), 1],
@@ -63,6 +63,7 @@ def drawboard(message):
 
     pygame.display.flip()
 
+
 def boardChanged(message):
     for i in range(24):
         if board[i] == "X":
@@ -74,6 +75,7 @@ def boardChanged(message):
             boardCirclesProp[i][2] = 0
             boardCirclesProp[i][1] = (255, 0, 0)
     drawboard(message)
+
 
 background_color = (255, 255, 255)
 (width, height) = (1280, 720)
@@ -90,16 +92,16 @@ prom = "X"
 while running:
     pos = pygame.mouse.get_pos()
     ev = pygame.event.get()
-    heuristika_faza1 = brojKamencicaNaPlociHeuristika
-    heuristika_faza23 = CovekVS_AI_Heuristika
-    evaluacija = evaluator()
 
+    heuristika_faza1 = position_number_heuristic
+    heuristika_faza23 = human_vs_ai_heuristic
+    evaluacija = evaluator()
     for i in range(9):
         zavrseno = False
         while not zavrseno:
             try:
                 pozicija = -1
-                while pozicija == -1 and running != False:
+                while pozicija == -1:
                     ev = pygame.event.get()
                     pos = pygame.mouse.get_pos()
                     for event in ev:
@@ -112,13 +114,13 @@ while running:
                 if board[pozicija] == "X":
                     board[pozicija] = "1"
                     boardChanged("Postavili ste figuru. Protivnik igra.")
-                    if imaLiIkoMill(pozicija, board):
+                    if player_have_mill(pozicija, board):
                         kamencicPostavljen = False
                         while not kamencicPostavljen:
                             try:
                                 pozicija = -1
                                 boardChanged("Postavili ste figuru. Ukloni protivnicku figuru.")
-                                while pozicija == -1 and running != False:
+                                while pozicija == -1:
                                     ev = pygame.event.get()
                                     pos = pygame.mouse.get_pos()
                                     for event in ev:
@@ -130,8 +132,8 @@ while running:
                                                     drawboard("Pojeli ste protivnika. Protivnik igra")
                                         if event.type == pygame.QUIT:
                                             quit()
-                                if board[pozicija] == "2" and not imaLiIkoMill(pozicija, board) or (
-                                        imaLiIkoMill(pozicija, board) and brojKonkretnihPoteza(board, "1") == 3):
+                                if board[pozicija] == "2" and not player_have_mill(pozicija, board) or (
+                                        player_have_mill(pozicija, board) and concrete_move_number(board, "1") == 3):
                                     board[pozicija] = "X"
                                     boardChanged("Pojeli ste protivnika. Protivnik igra")
                                     kamencicPostavljen = True
@@ -194,18 +196,17 @@ while running:
                                         nova_pozicija = i
                             if event.type == pygame.QUIT:
                                 quit()
-                    print(mogucaPozicija(pozicija,nova_pozicija,board))
-                    if board[nova_pozicija] == "X" and mogucaPozicija(pozicija,nova_pozicija, board):
+                    if board[nova_pozicija] == "X" and possibleMove(pozicija, nova_pozicija, board):
                         board[pozicija] = 'X'
                         board[nova_pozicija] = '1'
                         boardChanged("Pomjerili ste figuru. Protivnik igra")
-                        if imaLiIkoMill(nova_pozicija, board):
+                        if player_have_mill(nova_pozicija, board):
                             uklonjenProtivnik = False
                             while not uklonjenProtivnik:
                                 try:
                                     pozicija = -1
                                     boardChanged("Pojedi protivnika.")
-                                    while pozicija == -1 and running != False:
+                                    while pozicija == -1 :
                                         ev = pygame.event.get()
                                         pos = pygame.mouse.get_pos()
                                         for event in ev:
@@ -215,15 +216,15 @@ while running:
                                                         pozicija = i
                                             if event.type == pygame.QUIT:
                                                 quit()
-                                    if board[pozicija] == "2" and not imaLiIkoMill(pozicija, board) or (
-                                            imaLiIkoMill(pozicija, board) and brojKonkretnihPoteza(board, "1") == 3):
+                                    if board[pozicija] == "2" and not player_have_mill(pozicija, board) or (
+                                            player_have_mill(pozicija, board) and concrete_move_number(board, "1") == 3):
                                         board[pozicija] = "X"
                                         boardChanged("Pojeli ste protivnika. Protivnik igra")
                                         uklonjenProtivnik = True
                                     else:
                                         boardChanged("Pozicija ne postoji.")
                                 except Exception:
-                                    print("Nevalidan unos.")
+                                    boardChanged("GRESKA!")
                         igracZauzeoNovoMesto = True
                         igracSePomjerio = True
                     else:
